@@ -1,0 +1,38 @@
+﻿name: AutoValuate CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest flask scikit-learn numpy joblib
+        find . -name "requirements.txt" -exec pip install -r {} +
+
+    - name: Run Tests with pytest
+      run: |
+        TEST_FILE=$(find . -name "test_app.py" | head -n 1)
+        python -m pytest "$TEST_FILE"
+
+    - name: Build Docker Image
+      run: |
+        DOCKERFILE_PATH=$(find . -name "Dockerfile" | head -n 1)
+        DOCKER_DIR=$(dirname "$DOCKERFILE_PATH")
+        echo "Found Dockerfile at: $DOCKERFILE_PATH"
+        docker build -t autovaluate:latest -f "$DOCKERFILE_PATH" "$DOCKER_DIR"
