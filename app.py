@@ -93,3 +93,5 @@ if st.button("Predict Selling Price", type="primary", use_container_width=True):
         st.success(f"### Estimated Resale Price: ₹{prediction:.2f} Lakhs")
     except Exception as e:
         st.error(f"Prediction failed: {e}")
+
+#Finally completed the CI/CD pipelining
