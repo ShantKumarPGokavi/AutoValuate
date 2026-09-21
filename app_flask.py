@@ -30,8 +30,12 @@ def predict():
             df = df.drop(columns=['Year'])
             
         processed_data = preprocessor.transform(df)
-        prediction = model.predict(processed_data)[0]
-        return jsonify({"predicted_price": round(float(prediction), 2)}), 200
+        raw_prediction = model.predict(processed_data)[0]
+        
+        # Ensure non-negative price prediction
+        final_price = round(max(0.0, float(raw_prediction)), 2)
+        
+        return jsonify({"predicted_price": final_price}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
