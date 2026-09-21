@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import joblib
 import pandas as pd
 import datetime
@@ -13,6 +13,11 @@ PREPROCESSOR_PATH = os.path.join(BASE_DIR, 'car_preprocessor.pkl')
 model = joblib.load(MODEL_PATH)
 preprocessor = joblib.load(PREPROCESSOR_PATH)
 
+# Serves the webpage in browser
+@app.route('/', methods=['GET'])
+def home():
+    return render_template('index.html')
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({"status": "healthy"}), 200
@@ -23,7 +28,6 @@ def predict():
         data = request.get_json()
         df = pd.DataFrame([data])
         
-        # Calculate Car_Age if Year is provided instead
         if 'Year' in df.columns and 'Car_Age' not in df.columns:
             current_year = datetime.datetime.now().year
             df['Car_Age'] = current_year - df['Year']
@@ -31,8 +35,6 @@ def predict():
             
         processed_data = preprocessor.transform(df)
         raw_prediction = model.predict(processed_data)[0]
-        
-        # Ensure non-negative price prediction
         final_price = round(max(0.0, float(raw_prediction)), 2)
         
         return jsonify({"predicted_price": final_price}), 200
